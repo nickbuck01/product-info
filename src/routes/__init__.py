@@ -2,14 +2,14 @@ import mimetypes
 import re
 import os
 import requests
+from pydantic import BaseModel
 from fastapi import Request, APIRouter
 from fastapi.logger import logger
 from openai import OpenAI
 from requests import Timeout
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
-from src.services.ai_responses import get_ai_response
-
+from src.services.ai_responses import get_ai_response, add_message_to_session, get_or_create_session, send_whatsapp
 
 whatsapp = APIRouter(
     prefix="/v1"
@@ -42,17 +42,17 @@ async def whatsapp_endpoint(request: Request):
 
         media_url = form.get("MediaUrl0")  # For media (voice recordings)
         media_content_type = form.get("MediaContentType0")  # Content type (e.g., audio/ogg)
-
+        session_id = get_or_create_session(user_number)
         if user_message:
             logger.info(f"User message (Text) : {user_message}")
-            responses = get_ai_response(user_phone=user_number, message=user_message)
+            responses, tool_output = get_ai_response(user_phone=user_number, message=user_message, session_id=session_id)
 
         elif media_url and media_content_type.startswith("audio/"):
             # Handle voice message (requires transcription)
             user_message = transcribe_audio(media_url)
             if user_message:
                 logger.info(f"User message (Audio) : {user_message}")
-                responses = get_ai_response(user_phone=user_number, message=user_message)
+                responses, tool_output = get_ai_response(user_phone=user_number, message=user_message, session_id=session_id)
             else:
                 responses = ["Could not transcribe voice message."]
 
@@ -61,15 +61,19 @@ async def whatsapp_endpoint(request: Request):
         pattern = r'【\d+:\d+†[^\]]+】'
         for response in responses:
             response = re.sub(pattern, '', response)
-            twilio_client.messages.create(
-                body=response,
-                from_=TWILIO_PHONE_NUMBER,
-                to=user_number
-            )
+            add_message_to_session(user_number, session_id, response, sender="assistant")
+            if not tool_output:
+                send_whatsapp(to=user_number, body=response)
 
         return MessagingResponse()
     except Exception as e:
         logger.error(f"Got an exception - {e}")
+
+
+class WhatsAppRequest(BaseModel):
+    From: str
+    Body: str
+    isWebRequest: bool
 
 
 def transcribe_audio(media_url):
