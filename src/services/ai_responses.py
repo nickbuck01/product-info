@@ -211,7 +211,9 @@ def run_thread(thread_id, user_phone):
                             """
                     )
                 elif function_call.function.name == "handle_unanswered_question":
+                    print(f"handle_unanswered_question - {function_call.function.arguments}")
                     arguments = json.loads(function_call.function.arguments)
+                    print(f"arguments - {arguments}")
                     unanswered_question = arguments.get("question")
                     save_unanswered_questions_to_sheet(unanswered_question, user_phone)
 
