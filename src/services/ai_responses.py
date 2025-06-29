@@ -221,6 +221,10 @@ def run_thread(thread_id, user_phone):
                         "output":
                             "Unanswered question noted and saved to Google Sheets."
                     })
+                    text = "Sorry I have not been taught how to answer that question. " \
+                           "We will make a note of that question and I will be able to answer it soon."
+                    send_whatsapp(to=f"{user_phone}",
+                                  body=text)
 
             if tool_outputs:
                 completed_run = client.beta.threads.runs.submit_tool_outputs_and_poll(
