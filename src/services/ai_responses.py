@@ -253,7 +253,7 @@ def save_unanswered_questions_to_sheet(unanswered_question, user_phone):
     client = gspread.authorize(creds)
     # Open the specific Google Sheet (worksheet 1 assumed for unanswered questions)
     sheet = client.open_by_url(GOOGLE_SHEET_URL_FOR_UNANSWERED_QUESTIONS)
-    sheet = sheet.sheet2
+    sheet = sheet.sheet1
     # Append each unanswered question to the sheet
     user_phone = user_phone.split(":")[-1]
     sheet.append_row([unanswered_question, user_phone])
