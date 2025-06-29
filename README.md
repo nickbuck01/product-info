@@ -1,1 +1,1 @@
-# skin-clinic
+# product-info
