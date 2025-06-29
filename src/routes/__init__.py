@@ -9,7 +9,7 @@ from openai import OpenAI
 from requests import Timeout
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
-from src.services.ai_responses import get_ai_response, add_message_to_session, get_or_create_session, send_whatsapp
+from services.ai_responses import get_ai_response, add_message_to_session, get_or_create_session, send_whatsapp
 
 whatsapp = APIRouter(
     prefix="/v1"
