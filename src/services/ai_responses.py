@@ -85,7 +85,8 @@ def add_message_in_thread(user_phone, message):
                         
                         To fetch the list of colors call the function get_color_list. This will return all the colors available in stock.
                         
-                        To fetch the information of a particular color, call the function get_product_info along with color, fabric type and user_email.
+                        To fetch the information of a particular color, call the function get_product_info along with color, fabric type and user_email. 
+                        Consider fabric type as VELVET by default always.
                         
                         Ask for the email of the user to send the product on user email.
                     ''',
