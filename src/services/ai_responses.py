@@ -59,6 +59,8 @@ def get_ai_response(user_phone, message, session_id):
         add_message_to_session(user_phone, session_id, message)
         thread_id = add_message_in_thread(user_phone, message)
         text, tool_output = run_thread(thread_id, user_phone)
+        print(f"Line - 18")
+        print(f"text - {text}, tool output - {tool_output}")
         return text, tool_output
     except Exception as e:
         print(f"*********Exception - {e}*******")
