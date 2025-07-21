@@ -54,10 +54,14 @@ def get_ai_response(user_phone, message, session_id):
     """
     this function will generate the response for the given query
     """
-    add_message_to_session(user_phone, session_id, message)
-    thread_id = add_message_in_thread(user_phone, message)
-    text, tool_output = run_thread(thread_id, user_phone)
-    return text, tool_output
+    try:
+        print(f"Line -1")
+        add_message_to_session(user_phone, session_id, message)
+        thread_id = add_message_in_thread(user_phone, message)
+        text, tool_output = run_thread(thread_id, user_phone)
+        return text, tool_output
+    except Exception as e:
+        print(f"*********Exception - {e}*******")
 
 
 def add_message_in_thread(user_phone, message):
@@ -101,6 +105,7 @@ def add_message_in_thread(user_phone, message):
         role="user",
         content=message,
     )
+    print(f"Line - 3")
     return thread_id
 
 
@@ -112,51 +117,60 @@ def run_thread(thread_id, user_phone):
         thread_id=thread_id,
         assistant_id=ASSISTANT_ID
     )
+    print(f"Line - 4")
     tool_outputs = []
     while True:
         run = client.beta.threads.runs.retrieve(
             thread_id=thread_id,
             run_id=run.id
         )
-
+        print(f"Line - 5")
         if run.status == "completed":
             logger.info("Run completed")
             messages = client.beta.threads.messages.list(thread_id=thread_id)
             latest_message = messages.data[0]
             text = latest_message.content[0].text.value
             split_text = split_response(text)
+            print(f"Line - 6")
             return split_text, False
 
         elif run.status == 'requires_action':
             logger.info("Run required action")
+            print(f"Line - 7")
             for function_call in run.required_action.submit_tool_outputs.tool_calls:
                 if function_call.function.name == "get_color_list":
+                    print(f"Line - 8")
                     colors_list = get_color_list()
-
+                    print(f"Line - 9")
                     tool_outputs.append({
                         "tool_call_id":
                             function_call.id,
                         "output":
                             colors_list
                     })
+                    print(f"Line - 10")
                     send_whatsapp(to=f"{user_phone}",
                                   body=f'These are the available colours available in stock currently - {colors_list}')
                 elif function_call.function.name == "get_product_info":
+                    print(f"Line - 11")
                     arguments = json.loads(function_call.function.arguments)
                     fabric_list = get_product_info(fabric=arguments.get("fabric"), color=arguments.get("color"))
-
+                    print(f"Line - 12")
                     tool_outputs.append({
                         "tool_call_id":
                             function_call.id,
                         "output":
                             "Fabric list sent"
                     })
-
+                    
                     gmail_service = create_gmail_service()
+                    print(f"Line - 13")
                     for fabric in fabric_list:
+                        print(f"Line - 14")
                         send_whatsapp(to=f"{user_phone}",
                                       body=f'{fabric.get("fabric").upper()} {fabric.get("color").upper()}',
                                       image_url=f'{fabric.get("swatch_image")}')
+                        print(f"Line - 15")
                         send_email(
                             gmail_service,
                             sender=IMPERSONATED_USER,  # The email account to send from (same as IMPERSONATED_USER)
@@ -181,7 +195,7 @@ def run_thread(thread_id, user_phone):
                             )
                 elif function_call.function.name == "call_back_request":
                     arguments = json.loads(function_call.function.arguments)
-
+                    print(f"Line - 16")
                     tool_outputs.append({
                         "tool_call_id":
                             function_call.id,
@@ -211,6 +225,7 @@ def run_thread(thread_id, user_phone):
                             Skin Clinic London
                             """
                     )
+                    print(f"Line - 17")
                 elif function_call.function.name == "handle_unanswered_question":
                     print(f"handle_unanswered_question - {function_call.function.arguments}")
                     arguments = json.loads(function_call.function.arguments)
@@ -282,6 +297,7 @@ def add_message_to_session(user_number, session_id, message_text, sender="user")
     """
     Add a message to the session with sender information.
     """
+    print(f"Line - 2")
     for session in sessions[user_number]:
         if session["session_id"] == session_id:
             session["messages"].append({
