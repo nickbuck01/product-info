@@ -57,12 +57,14 @@ async def whatsapp_endpoint(request: Request):
                 responses = ["Could not transcribe voice message."]
 
         logger.info(f"Received request with query - {user_message}")
-
+        print(f"Line - 19")
         pattern = r'【\d+:\d+†[^\]]+】'
         for response in responses:
             response = re.sub(pattern, '', response)
             add_message_to_session(user_number, session_id, response, sender="assistant")
+            print(f"Line - 20")
             if not tool_output:
+                print(f"Line - 21")
                 send_whatsapp(to=user_number, body=response)
 
         return MessagingResponse()
